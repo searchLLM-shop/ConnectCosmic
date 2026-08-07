@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Community — powered by Connect Cosmic</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="back-link">← All communities</a>
+    <div class="brand" id="brand-name">Loading…</div>
+    <div class="powered">powered by <strong>Connect Cosmic</strong></div>
+  </header>
+
+  <main class="layout">
+    <section class="trending">
+      <h2>Trending right now</h2>
+      <ul id="trending-list"></ul>
+      <p class="hint">Open this page in another tab to simulate a second member and get matched live.</p>
+    </section>
+
+    <section class="stage">
+      <div id="picker" class="panel">
+        <h1>What are you here about?</h1>
+        <p class="sub" id="brand-tagline"></p>
+        <div id="topic-list" class="topic-list"></div>
+        <p id="status" class="status"></p>
+      </div>
+
+      <div id="chat" class="panel hidden">
+        <div class="chat-header">
+          <div>
+            <div class="chat-topic" id="chat-topic"></div>
+            <div class="chat-you" id="chat-you"></div>
+          </div>
+          <button id="reveal-btn" class="ghost-btn">Reveal identity</button>
+          <button id="leave-btn" class="ghost-btn danger">Leave</button>
+        </div>
+        <div id="tip-banner" class="tip-banner"></div>
+        <div id="messages" class="messages"></div>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-input" autocomplete="off" placeholder="Type a message…" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/community.js"></script>
+</body>
+</html>

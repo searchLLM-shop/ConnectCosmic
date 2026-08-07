@@ -1,0 +1,70 @@
+[
+  {
+    "slug": "flowly",
+    "name": "Flowly",
+    "tagline": "Workflow automation for ops teams",
+    "accentColor": "#6d5efc",
+    "accentColor2": "#35d0ba",
+    "topics": [
+      {
+        "id": "onboarding",
+        "label": "Getting started / onboarding",
+        "tip": "Flowly tip: the Quickstart guide gets most teams live in under 10 minutes."
+      },
+      {
+        "id": "api",
+        "label": "API & integrations",
+        "tip": "Flowly tip: our API changelog is now searchable — flowly.io/changelog."
+      },
+      {
+        "id": "billing",
+        "label": "Billing & plans",
+        "tip": "Flowly tip: annual plans save 20% — ask in-chat about a limited upgrade offer."
+      },
+      {
+        "id": "features",
+        "label": "Feature requests",
+        "tip": "Flowly tip: vote on the public roadmap at flowly.io/roadmap."
+      },
+      {
+        "id": "general",
+        "label": "General discussion",
+        "tip": "Flowly tip: join the monthly community call — details pinned in #announcements."
+      }
+    ]
+  },
+  {
+    "slug": "zephyrfit",
+    "name": "Zephyr Fit",
+    "tagline": "Home workout gear & coaching",
+    "accentColor": "#ff7a59",
+    "accentColor2": "#ffd166",
+    "topics": [
+      {
+        "id": "form-check",
+        "label": "Form check / technique",
+        "tip": "Zephyr tip: book a free 1:1 form review this week."
+      },
+      {
+        "id": "nutrition",
+        "label": "Nutrition & recovery",
+        "tip": "Zephyr tip: the new recovery guide just dropped in the app."
+      },
+      {
+        "id": "gear",
+        "label": "Gear questions",
+        "tip": "Zephyr tip: members save 15% on resistance bands this month."
+      },
+      {
+        "id": "challenges",
+        "label": "Challenges & accountability",
+        "tip": "Zephyr tip: the 30-day squat challenge starts Monday — join the cohort."
+      },
+      {
+        "id": "general",
+        "label": "General chat",
+        "tip": "Zephyr tip: share your progress photo in #transformations for a shoutout."
+      }
+    ]
+  }
+]

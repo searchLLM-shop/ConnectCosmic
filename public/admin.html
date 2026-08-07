@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connect Cosmic — admin</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="back-link">← All communities</a>
+    <div class="brand">Connect Cosmic <span>Admin</span></div>
+    <div class="powered">manage brand communities — no code required</div>
+  </header>
+
+  <main class="admin-layout">
+    <section class="admin-list">
+      <h2>Communities</h2>
+      <div id="brand-list"></div>
+      <button id="new-brand-btn" class="primary-btn">+ New community</button>
+    </section>
+
+    <section class="admin-form-wrap">
+      <div id="empty-state" class="panel">
+        <p class="sub">Select a community to edit, or create a new one.</p>
+      </div>
+
+      <form id="brand-form" class="panel hidden">
+        <h2 id="form-title">New community</h2>
+
+        <label>Slug (URL id, cannot be changed after creation)
+          <input id="f-slug" placeholder="e.g. acme-co" required>
+        </label>
+        <label>Name
+          <input id="f-name" placeholder="e.g. Acme Co" required>
+        </label>
+        <label>Tagline
+          <input id="f-tagline" placeholder="One line describing the brand">
+        </label>
+        <div class="color-row">
+          <label>Primary color
+            <input id="f-color1" type="color" value="#6d5efc">
+          </label>
+          <label>Secondary color
+            <input id="f-color2" type="color" value="#35d0ba">
+          </label>
+        </div>
+
+        <h3>Topics</h3>
+        <p class="sub small">Members can only match on topics you define here — no open free text.</p>
+        <div id="topics-editor"></div>
+        <button type="button" id="add-topic-btn" class="ghost-btn">+ Add topic</button>
+
+        <p id="form-error" class="form-error"></p>
+
+        <div class="form-actions">
+          <button type="submit" class="primary-btn">Save community</button>
+          <button type="button" id="delete-btn" class="ghost-btn danger hidden">Delete community</button>
+          <button type="button" id="cancel-btn" class="ghost-btn">Cancel</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/admin.js"></script>
+</body>
+</html>

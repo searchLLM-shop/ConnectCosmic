@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: connect-cosmic
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: ADMIN_USER
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+# Note: the free plan has no persistent disk, so data/brands.json is not
+# guaranteed to survive a redeploy or the free instance spinning down after
+# inactivity — treat brand edits made through /admin as ephemeral until you
+# either add a paid persistent disk or move brand storage to a real database.
