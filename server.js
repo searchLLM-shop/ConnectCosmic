@@ -177,6 +177,8 @@ app.get('/api/me', (req, res) => {
   res.json({ id: member.id, email: member.email, displayName: member.displayName });
 });
 
+app.get('/api/ai-status', (req, res) => res.json({ enabled: ai.isEnabled() }));
+
 app.get('/api/b/:slug/feed', auth.requireMemberAuth, (req, res) => {
   const { slug } = req.params;
   if (!brandBySlug.has(slug)) return res.status(404).json({ error: 'Unknown community.' });
@@ -318,7 +320,9 @@ async function checkAiMatch(roomId) {
   room.aiInFlight = true;
   try {
     const broadcasts = store.broadcasts.filter(b => b.slug === room.slug);
+    console.log(`[ai] checking room ${roomId}: ${room.transcript.length} messages, ${broadcasts.length} candidate broadcasts`);
     const matchId = await ai.pickBroadcastForConversation(room.transcript, broadcasts);
+    console.log(`[ai] room ${roomId} result: ${matchId || 'no match'}`);
     const stillOpen = rooms.get(roomId);
     if (!stillOpen || !matchId || matchId === stillOpen.lastAiBroadcastId) return;
 
