@@ -57,10 +57,19 @@ function validateBrand(body, { isNew }) {
   for (const t of body.topics) {
     if (!SLUG_RE.test(t.id || '')) return `Topic id "${t.id}" must be lowercase letters, numbers, and hyphens only.`;
     if (!t.label?.trim()) return `Topic "${t.id}" needs a label.`;
+    if (t.tipUrl?.trim() && /\s/.test(t.tipUrl.trim())) return `Topic "${t.id}"'s tip link can't contain spaces.`;
   }
   const ids = body.topics.map(t => t.id);
   if (new Set(ids).size !== ids.length) return 'Topic ids must be unique within a brand.';
   return null;
+}
+
+function normalizeTopics(topics) {
+  return topics.map(t => {
+    let tipUrl = t.tipUrl?.trim() || '';
+    if (tipUrl && !/^https?:\/\//i.test(tipUrl)) tipUrl = `https://${tipUrl}`;
+    return { id: t.id, label: t.label.trim(), tip: t.tip || '', tipUrl };
+  });
 }
 
 app.use(['/admin', '/admin.html', '/admin.js', '/admin.css', '/api/admin'], requireAdminAuth);
@@ -82,7 +91,7 @@ app.post('/api/admin/brands', (req, res) => {
   BRANDS.push({
     slug: body.slug, name: body.name.trim(), tagline: body.tagline || '',
     accentColor: body.accentColor, accentColor2: body.accentColor2,
-    topics: body.topics.map(t => ({ id: t.id, label: t.label.trim(), tip: t.tip || '' })),
+    topics: normalizeTopics(body.topics),
   });
   saveBrands();
   res.status(201).json({ ok: true });
@@ -98,7 +107,7 @@ app.put('/api/admin/brands/:slug', (req, res) => {
   BRANDS[idx] = {
     ...BRANDS[idx], name: body.name.trim(), tagline: body.tagline || '',
     accentColor: body.accentColor, accentColor2: body.accentColor2,
-    topics: body.topics.map(t => ({ id: t.id, label: t.label.trim(), tip: t.tip || '' })),
+    topics: normalizeTopics(body.topics),
   };
   saveBrands();
   res.json({ ok: true });
@@ -176,8 +185,8 @@ io.on('connection', (socket) => {
       socketMeta.set(socket.id, { slug, topicId, roomId, anonName: 'Member B' });
       socketMeta.set(partnerId, { slug, topicId, roomId, anonName: 'Member A' });
 
-      io.to(partnerId).emit('matched', { roomId, you: 'Member A', peer: 'Member B', topic: topic.label, tip: topic.tip });
-      socket.emit('matched', { roomId, you: 'Member B', peer: 'Member A', topic: topic.label, tip: topic.tip });
+      io.to(partnerId).emit('matched', { roomId, you: 'Member A', peer: 'Member B', topic: topic.label, tip: topic.tip, tipUrl: topic.tipUrl });
+      socket.emit('matched', { roomId, you: 'Member B', peer: 'Member A', topic: topic.label, tip: topic.tip, tipUrl: topic.tipUrl });
 
       socket.join(roomId);
       io.sockets.sockets.get(partnerId)?.join(roomId);

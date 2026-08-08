@@ -39,10 +39,15 @@ function addTopicRow(topic = { id: '', label: '', tip: '' }) {
   const row = document.createElement('div');
   row.className = 'topic-row';
   row.innerHTML = `
-    <input class="t-id" placeholder="topic-id" value="${topic.id}">
-    <input class="t-label" placeholder="Label shown to members" value="${topic.label}">
-    <input class="t-tip" placeholder="Sponsored tip (optional)" value="${topic.tip}">
-    <button type="button" title="Remove topic">✕</button>
+    <div class="topic-row-line">
+      <input class="t-id" placeholder="topic-id" value="${topic.id}">
+      <input class="t-label" placeholder="Label shown to members" value="${topic.label}">
+      <button type="button" title="Remove topic">✕</button>
+    </div>
+    <div class="topic-row-line">
+      <input class="t-tip" placeholder="Sponsored tip (optional)" value="${topic.tip}">
+      <input class="t-tipurl" placeholder="Tip link (optional, e.g. flowly.io/changelog)" value="${topic.tipUrl || ''}">
+    </div>
   `;
   row.querySelector('button').addEventListener('click', () => row.remove());
   topicsEditor.appendChild(row);
@@ -53,6 +58,7 @@ function readTopicsFromForm() {
     id: row.querySelector('.t-id').value.trim(),
     label: row.querySelector('.t-label').value.trim(),
     tip: row.querySelector('.t-tip').value.trim(),
+    tipUrl: row.querySelector('.t-tipurl').value.trim(),
   }));
 }
 

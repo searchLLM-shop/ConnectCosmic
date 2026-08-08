@@ -57,14 +57,14 @@ socket.on('waiting', ({ topic }) => {
   statusEl.textContent = `Looking for another member also thinking about "${topic}"…`;
 });
 
-socket.on('matched', ({ roomId, you, peer, topic, tip }) => {
+socket.on('matched', ({ roomId, you, peer, topic, tip, tipUrl }) => {
   currentRoomId = roomId;
   myAnonName = you;
   picker.classList.add('hidden');
   chat.classList.remove('hidden');
   chatTopic.textContent = topic;
   chatYou.textContent = `You are ${you}, matched with ${peer}`;
-  tipBanner.textContent = '💡 ' + tip;
+  renderTip(tip, tipUrl);
   messages.innerHTML = '';
   addMessage('system', `You've been matched. Say hi!`);
   revealBtn.disabled = false;
@@ -83,6 +83,21 @@ socket.on('revealed', ({ anonName, name, location }) => {
 socket.on('peer-left', () => {
   revealBtn.disabled = true;
 });
+
+function renderTip(tip, tipUrl) {
+  tipBanner.innerHTML = '';
+  if (!tip) { tipBanner.hidden = true; return; }
+  tipBanner.hidden = false;
+  tipBanner.append('💡 ' + tip + ' ');
+  if (tipUrl) {
+    const link = document.createElement('a');
+    link.href = tipUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Learn more →';
+    tipBanner.appendChild(link);
+  }
+}
 
 function addMessage(kind, text, from) {
   const div = document.createElement('div');

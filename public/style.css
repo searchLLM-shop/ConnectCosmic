@@ -121,6 +121,12 @@ body {
   font-size: 13px;
   color: var(--accent-2);
 }
+.tip-banner a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.tip-banner a:hover { text-decoration: underline; }
 
 .messages {
   height: 280px;

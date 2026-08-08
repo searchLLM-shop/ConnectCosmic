@@ -82,12 +82,19 @@
 .sub.small { font-size: 12px; margin: 0 0 12px; }
 
 .topic-row {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr 1.6fr auto;
-  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   margin-bottom: 8px;
+}
+.topic-row-line {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  gap: 8px;
   align-items: center;
 }
+.topic-row-line:first-child { margin-bottom: 8px; }
+.topic-row-line:last-child { grid-template-columns: 1fr 1.4fr; }
 .topic-row input {
   padding: 8px 10px;
   border-radius: 8px;
@@ -112,5 +119,6 @@
 
 @media (max-width: 760px) {
   .admin-layout { grid-template-columns: 1fr; }
-  .topic-row { grid-template-columns: 1fr; }
+  .topic-row-line { grid-template-columns: 1fr; }
+  .topic-row-line:last-child { grid-template-columns: 1fr; }
 }

@@ -9,27 +9,32 @@
       {
         "id": "onboarding",
         "label": "Getting started / onboarding",
-        "tip": "Flowly tip: the Quickstart guide gets most teams live in under 10 minutes."
+        "tip": "The Quickstart guide gets most teams live in under 10 minutes.",
+        "tipUrl": "https://flowly.io/quickstart"
       },
       {
         "id": "api",
         "label": "API & integrations",
-        "tip": "Flowly tip: our API changelog is now searchable — flowly.io/changelog."
+        "tip": "Our API changelog is now searchable.",
+        "tipUrl": "https://flowly.io/changelog"
       },
       {
         "id": "billing",
         "label": "Billing & plans",
-        "tip": "Flowly tip: annual plans save 20% — ask in-chat about a limited upgrade offer."
+        "tip": "Annual plans save 20% — see current offers.",
+        "tipUrl": "https://flowly.io/pricing"
       },
       {
         "id": "features",
         "label": "Feature requests",
-        "tip": "Flowly tip: vote on the public roadmap at flowly.io/roadmap."
+        "tip": "Vote on what we build next.",
+        "tipUrl": "https://flowly.io/roadmap"
       },
       {
         "id": "general",
         "label": "General discussion",
-        "tip": "Flowly tip: join the monthly community call — details pinned in #announcements."
+        "tip": "Join the monthly community call.",
+        "tipUrl": "https://flowly.io/events"
       }
     ]
   },
@@ -43,27 +48,32 @@
       {
         "id": "form-check",
         "label": "Form check / technique",
-        "tip": "Zephyr tip: book a free 1:1 form review this week."
+        "tip": "Book a free 1:1 form review this week.",
+        "tipUrl": "https://zephyrfit.com/form-review"
       },
       {
         "id": "nutrition",
         "label": "Nutrition & recovery",
-        "tip": "Zephyr tip: the new recovery guide just dropped in the app."
+        "tip": "The new recovery guide just dropped.",
+        "tipUrl": "https://zephyrfit.com/recovery-guide"
       },
       {
         "id": "gear",
         "label": "Gear questions",
-        "tip": "Zephyr tip: members save 15% on resistance bands this month."
+        "tip": "Members save 15% on resistance bands this month.",
+        "tipUrl": "https://zephyrfit.com/shop/bands"
       },
       {
         "id": "challenges",
         "label": "Challenges & accountability",
-        "tip": "Zephyr tip: the 30-day squat challenge starts Monday — join the cohort."
+        "tip": "The 30-day squat challenge starts Monday.",
+        "tipUrl": "https://zephyrfit.com/challenges/squat30"
       },
       {
         "id": "general",
         "label": "General chat",
-        "tip": "Zephyr tip: share your progress photo in #transformations for a shoutout."
+        "tip": "Share your progress photo for a shoutout.",
+        "tipUrl": "https://zephyrfit.com/community"
       }
     ]
   }
