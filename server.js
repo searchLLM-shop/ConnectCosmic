@@ -51,12 +51,15 @@ function saveBrands() {
 }
 
 const SLUG_RE = /^[a-z0-9-]+$/;
+const PLANS = ['pilot', 'growth', 'enterprise'];
+const PILOT_AI_MONTHLY_LIMIT = 20;
 
 function validateBrand(body, { isNew }) {
   if (isNew && !SLUG_RE.test(body.slug || '')) return 'Slug must be lowercase letters, numbers, and hyphens only.';
   if (!body.name?.trim()) return 'Name is required.';
   if (!/^#[0-9a-fA-F]{6}$/.test(body.accentColor || '')) return 'Accent color must be a hex code like #6d5efc.';
   if (!/^#[0-9a-fA-F]{6}$/.test(body.accentColor2 || '')) return 'Secondary color must be a hex code like #35d0ba.';
+  if (body.plan && !PLANS.includes(body.plan)) return 'Plan must be pilot, growth, or enterprise.';
   if (!Array.isArray(body.topics) || body.topics.length === 0) return 'At least one topic is required.';
   for (const t of body.topics) {
     if (!SLUG_RE.test(t.id || '')) return `Topic id "${t.id}" must be lowercase letters, numbers, and hyphens only.`;
@@ -66,6 +69,28 @@ function validateBrand(body, { isNew }) {
   const ids = body.topics.map(t => t.id);
   if (new Set(ids).size !== ids.length) return 'Topic ids must be unique within a brand.';
   return null;
+}
+
+function monthKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function aiUsageThisMonth(slug) {
+  return store.aiUsage.find(u => u.slug === slug && u.monthKey === monthKey())?.count || 0;
+}
+
+function incrementAiUsage(slug) {
+  const key = monthKey();
+  const existing = store.aiUsage.find(u => u.slug === slug && u.monthKey === key);
+  if (existing) store.aiUsage.update(u => u.id === existing.id, { count: existing.count + 1 });
+  else store.aiUsage.add({ id: crypto.randomUUID(), slug, monthKey: key, count: 1 });
+}
+
+function aiQuotaRemaining(slug) {
+  const plan = brandBySlug.get(slug)?.plan || 'pilot';
+  if (plan !== 'pilot') return Infinity;
+  return Math.max(0, PILOT_AI_MONTHLY_LIMIT - aiUsageThisMonth(slug));
 }
 
 function normalizeTopics(topics) {
@@ -95,6 +120,7 @@ app.post('/api/admin/brands', (req, res) => {
   BRANDS.push({
     slug: body.slug, name: body.name.trim(), tagline: body.tagline || '',
     accentColor: body.accentColor, accentColor2: body.accentColor2,
+    plan: PLANS.includes(body.plan) ? body.plan : 'pilot',
     topics: normalizeTopics(body.topics),
   });
   saveBrands();
@@ -111,10 +137,22 @@ app.put('/api/admin/brands/:slug', (req, res) => {
   BRANDS[idx] = {
     ...BRANDS[idx], name: body.name.trim(), tagline: body.tagline || '',
     accentColor: body.accentColor, accentColor2: body.accentColor2,
+    plan: PLANS.includes(body.plan) ? body.plan : (BRANDS[idx].plan || 'pilot'),
     topics: normalizeTopics(body.topics),
   };
   saveBrands();
   res.json({ ok: true });
+});
+
+app.get('/api/admin/brands/:slug/ai-usage', (req, res) => {
+  const { slug } = req.params;
+  if (!brandBySlug.has(slug)) return res.status(404).json({ error: 'Unknown brand.' });
+  const plan = brandBySlug.get(slug).plan || 'pilot';
+  res.json({
+    plan,
+    used: aiUsageThisMonth(slug),
+    limit: plan === 'pilot' ? PILOT_AI_MONTHLY_LIMIT : null,
+  });
 });
 
 app.delete('/api/admin/brands/:slug', (req, res) => {
@@ -319,9 +357,14 @@ async function checkAiMatch(roomId) {
   if (!room || room.aiInFlight) return;
   room.aiInFlight = true;
   try {
+    if (aiQuotaRemaining(room.slug) <= 0) {
+      console.log(`[ai] room ${roomId}: pilot monthly quota exhausted for ${room.slug}, skipping`);
+      return;
+    }
     const broadcasts = store.broadcasts.filter(b => b.slug === room.slug);
     console.log(`[ai] checking room ${roomId}: ${room.transcript.length} messages, ${broadcasts.length} candidate broadcasts`);
     const matchId = await ai.pickBroadcastForConversation(room.transcript, broadcasts);
+    incrementAiUsage(room.slug);
     console.log(`[ai] room ${roomId} result: ${matchId || 'no match'}`);
     const stillOpen = rooms.get(roomId);
     if (!stillOpen || !matchId || matchId === stillOpen.lastAiBroadcastId) return;

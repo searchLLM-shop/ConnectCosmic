@@ -5,6 +5,7 @@
     "tagline": "Workflow automation for ops teams",
     "accentColor": "#6d5efc",
     "accentColor2": "#35d0ba",
+    "plan": "pilot",
     "topics": [
       {
         "id": "onboarding",
@@ -44,6 +45,7 @@
     "tagline": "Home workout gear & coaching",
     "accentColor": "#ff7a59",
     "accentColor2": "#ffd166",
+    "plan": "pilot",
     "topics": [
       {
         "id": "form-check",

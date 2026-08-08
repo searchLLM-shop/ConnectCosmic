@@ -44,4 +44,5 @@ module.exports = {
   broadcasts: makeCollection('broadcasts.json'),
   comments: makeCollection('comments.json'),
   ratings: makeCollection('ratings.json'),
+  aiUsage: makeCollection('ai-usage.json'),
 };

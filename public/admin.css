@@ -34,6 +34,19 @@
 .brand-row .name { font-size: 14px; font-weight: 600; }
 .brand-row .slug { font-size: 11px; color: var(--muted); }
 
+.plan-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+.plan-badge.plan-pilot { background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); }
+.plan-badge.plan-growth { background: #1c2a3a; color: var(--accent-2); }
+.plan-badge.plan-enterprise { background: #241a44; color: var(--accent); }
+
 .primary-btn {
   width: 100%;
   padding: 12px;

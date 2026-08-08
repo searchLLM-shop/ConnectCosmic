@@ -8,6 +8,8 @@ const nameInput = document.getElementById('f-name');
 const taglineInput = document.getElementById('f-tagline');
 const color1Input = document.getElementById('f-color1');
 const color2Input = document.getElementById('f-color2');
+const planInput = document.getElementById('f-plan');
+const aiUsageNote = document.getElementById('ai-usage-note');
 const topicsEditor = document.getElementById('topics-editor');
 const addTopicBtn = document.getElementById('add-topic-btn');
 const deleteBtn = document.getElementById('delete-btn');
@@ -37,7 +39,7 @@ function renderList() {
     const row = document.createElement('div');
     row.className = 'brand-row' + (b.slug === editingSlug ? ' active' : '');
     row.innerHTML = `<span class="dot" style="background:${b.accentColor}"></span>
-      <span><div class="name">${b.name}</div><div class="slug">/b/${b.slug}</div></span>`;
+      <span><div class="name">${b.name} <span class="plan-badge plan-${b.plan || 'pilot'}">${b.plan || 'pilot'}</span></div><div class="slug">/b/${b.slug}</div></span>`;
     row.addEventListener('click', () => openForEdit(b.slug));
     brandList.appendChild(row);
   });
@@ -79,6 +81,8 @@ function openForNew() {
   taglineInput.value = '';
   color1Input.value = '#6d5efc';
   color2Input.value = '#35d0ba';
+  planInput.value = 'pilot';
+  aiUsageNote.textContent = '';
   topicsEditor.innerHTML = '';
   addTopicRow();
   deleteBtn.classList.add('hidden');
@@ -100,6 +104,7 @@ function openForEdit(slug) {
   taglineInput.value = b.tagline || '';
   color1Input.value = b.accentColor;
   color2Input.value = b.accentColor2;
+  planInput.value = b.plan || 'pilot';
   topicsEditor.innerHTML = '';
   b.topics.forEach(addTopicRow);
   deleteBtn.classList.remove('hidden');
@@ -108,7 +113,18 @@ function openForEdit(slug) {
   form.classList.remove('hidden');
   broadcastsPanel.classList.remove('hidden');
   loadBroadcasts(slug);
+  loadAiUsage(slug);
   renderList();
+}
+
+async function loadAiUsage(slug) {
+  aiUsageNote.textContent = '';
+  const res = await fetch(`/api/admin/brands/${slug}/ai-usage`);
+  if (!res.ok) return;
+  const { plan, used, limit } = await res.json();
+  aiUsageNote.textContent = limit === null
+    ? `AI-matched tips used this month: ${used} (unlimited on ${plan})`
+    : `AI-matched tips used this month: ${used} / ${limit} (${plan} plan — resets next month)`;
 }
 
 function closeForm() {
@@ -207,6 +223,7 @@ form.addEventListener('submit', async (e) => {
     tagline: taglineInput.value.trim(),
     accentColor: color1Input.value,
     accentColor2: color2Input.value,
+    plan: planInput.value,
     topics: readTopicsFromForm(),
   };
 
