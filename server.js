@@ -6,6 +6,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const store = require('./store');
 const auth = require('./auth');
+const ai = require('./ai');
 
 const app = express();
 app.set('trust proxy', 1); // Render sits behind a proxy that terminates TLS; trust its X-Forwarded-Proto.
@@ -311,6 +312,25 @@ function broadcastTrending(slug) {
   io.to(`brand:${slug}`).emit('trending', counts);
 }
 
+async function checkAiMatch(roomId) {
+  const room = rooms.get(roomId);
+  if (!room || room.aiInFlight) return;
+  room.aiInFlight = true;
+  try {
+    const broadcasts = store.broadcasts.filter(b => b.slug === room.slug);
+    const matchId = await ai.pickBroadcastForConversation(room.transcript, broadcasts);
+    const stillOpen = rooms.get(roomId);
+    if (!stillOpen || !matchId || matchId === stillOpen.lastAiBroadcastId) return;
+
+    const post = broadcasts.find(b => b.id === matchId);
+    if (!post) return;
+    stillOpen.lastAiBroadcastId = matchId;
+    io.to(roomId).emit('ai-tip', { type: post.type, title: post.title, body: post.body, link: post.link });
+  } finally {
+    if (room) room.aiInFlight = false;
+  }
+}
+
 io.on('connection', (socket) => {
   socket.on('enter-brand', (slug) => {
     const brand = brandBySlug.get(slug);
@@ -333,7 +353,10 @@ io.on('connection', (socket) => {
     if (partnerId && partnerId !== socket.id) {
       pool.delete(partnerId);
       const roomId = roomIdFor(socket.id, partnerId);
-      rooms.set(roomId, { slug, topicId, members: [partnerId, socket.id], reveals: new Set() });
+      rooms.set(roomId, {
+        slug, topicId, members: [partnerId, socket.id], reveals: new Set(),
+        transcript: [], aiTimer: null, aiInFlight: false, lastAiBroadcastId: null,
+      });
 
       socketMeta.set(socket.id, { slug, topicId, roomId, anonName: 'Member B' });
       socketMeta.set(partnerId, { slug, topicId, roomId, anonName: 'Member A' });
@@ -354,7 +377,16 @@ io.on('connection', (socket) => {
   socket.on('chat-message', ({ roomId, text }) => {
     const meta = socketMeta.get(socket.id);
     if (!meta || meta.roomId !== roomId) return;
-    io.to(roomId).emit('chat-message', { from: meta.anonName, text: String(text).slice(0, 500) });
+    const clean = String(text).slice(0, 500);
+    io.to(roomId).emit('chat-message', { from: meta.anonName, text: clean });
+
+    const room = rooms.get(roomId);
+    if (room && ai.isEnabled()) {
+      room.transcript.push({ from: meta.anonName, text: clean });
+      if (room.transcript.length > 12) room.transcript.shift();
+      clearTimeout(room.aiTimer);
+      room.aiTimer = setTimeout(() => checkAiMatch(roomId), 2500);
+    }
   });
 
   socket.on('reveal', ({ roomId }) => {
@@ -402,6 +434,7 @@ io.on('connection', (socket) => {
     if (meta.roomId) {
       const room = rooms.get(meta.roomId);
       if (room) {
+        clearTimeout(room.aiTimer);
         const peerId = room.members.find(id => id !== sock.id);
         io.to(meta.roomId).emit('chat-message', { from: 'system', text: `${meta.anonName} left the chat.` });
         io.to(meta.roomId).emit('peer-left');

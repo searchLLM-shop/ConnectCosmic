@@ -129,6 +129,11 @@ body {
   text-decoration: none;
 }
 .tip-banner a:hover { text-decoration: underline; }
+.tip-banner.ai-tip {
+  background: #241a44;
+  border-style: solid;
+  border-color: var(--accent-2);
+}
 
 .messages {
   height: 280px;
@@ -208,6 +213,17 @@ body {
 }
 .card-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
 .card-tagline { font-size: 13px; color: var(--muted); }
+
+.demo-note {
+  margin: 20px 0 28px;
+  padding: 12px 16px;
+  background: #1a2440;
+  border: 1px dashed var(--accent);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--accent-2);
+  max-width: 560px;
+}
 
 /* Auth + tabs */
 .auth-status {

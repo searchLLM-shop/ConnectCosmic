@@ -88,8 +88,29 @@ socket.on('peer-left', () => {
   revealBtn.disabled = true;
 });
 
+socket.on('ai-tip', ({ title, body, link }) => {
+  addMessage('system', `🤖 Based on your conversation, here's something from the brand:`);
+  tipBanner.innerHTML = '';
+  tipBanner.hidden = false;
+  tipBanner.classList.add('ai-tip');
+  tipBanner.append('🤖 ');
+  const strong = document.createElement('strong');
+  strong.textContent = title + ': ';
+  tipBanner.appendChild(strong);
+  tipBanner.append(body + ' ');
+  if (link) {
+    const a = document.createElement('a');
+    a.href = link;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = 'Learn more →';
+    tipBanner.appendChild(a);
+  }
+});
+
 function renderTip(tip, tipUrl) {
   tipBanner.innerHTML = '';
+  tipBanner.classList.remove('ai-tip');
   if (!tip) { tipBanner.hidden = true; return; }
   tipBanner.hidden = false;
   tipBanner.append('💡 ' + tip + ' ');
