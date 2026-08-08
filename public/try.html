@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connect Cosmic — brand communities</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="back-link">← Connect Cosmic</a>
+    <div class="brand">Try the demo</div>
+    <a href="/admin" class="back-link">Manage communities →</a>
+  </header>
+
+  <main class="directory">
+    <h1>Pick a community</h1>
+    <p class="sub">Each brand below runs on its own topic taxonomy, branding, and live match pool — same engine, fully separate communities.</p>
+    <div id="brand-grid" class="brand-grid"></div>
+  </main>
+
+  <script>
+    fetch('/api/brands').then(r => r.json()).then(brands => {
+      const grid = document.getElementById('brand-grid');
+      brands.forEach(b => {
+        const card = document.createElement('a');
+        card.href = `/b/${b.slug}`;
+        card.className = 'brand-card';
+        card.style.setProperty('--card-accent', b.accentColor);
+        card.innerHTML = `
+          <div class="swatch" style="background:${b.accentColor}"></div>
+          <div class="card-name">${b.name}</div>
+          <div class="card-tagline">${b.tagline}</div>
+        `;
+        grid.appendChild(card);
+      });
+    });
+  </script>
+</body>
+</html>

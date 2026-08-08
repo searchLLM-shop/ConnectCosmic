@@ -60,6 +60,25 @@
           <button type="button" id="cancel-btn" class="ghost-btn">Cancel</button>
         </div>
       </form>
+
+      <section id="broadcasts-panel" class="panel hidden">
+        <h2>Community broadcasts</h2>
+        <p class="sub small">Posts your signed-in members see and can comment on (and rate, for feedback posts) in their Community tab.</p>
+        <div id="broadcasts-list"></div>
+
+        <form id="broadcast-form" class="broadcast-form">
+          <select id="bc-type">
+            <option value="promotion">🎁 Promotion</option>
+            <option value="support">🛟 Support</option>
+            <option value="feedback">⭐ Feedback / ratings</option>
+          </select>
+          <input id="bc-title" placeholder="Title" required>
+          <textarea id="bc-body" placeholder="Message to members…" required></textarea>
+          <input id="bc-link" placeholder="Link (optional)">
+          <button type="submit" class="primary-btn">Post to community</button>
+          <p id="broadcast-error" class="form-error"></p>
+        </form>
+      </section>
     </section>
   </main>
 

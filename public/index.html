@@ -3,37 +3,137 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Connect Cosmic — brand communities</title>
-<link rel="stylesheet" href="style.css">
+<title>Connect Cosmic — live topic-matching for brand communities</title>
+<meta name="description" content="Turn your website traffic into a real-time community. Match members on shared interests, let them build lasting connections, and reach them with broadcasts your members actually read.">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/marketing.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">Connect Cosmic</div>
-    <a href="/admin" class="back-link">Manage communities →</a>
+  <header class="nav">
+    <div class="nav-brand">Connect Cosmic</div>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/admin" class="nav-admin-link">Brand login</a>
+      <a href="/try" class="nav-cta">Try the demo</a>
+    </nav>
   </header>
 
-  <main class="directory">
-    <h1>Pick a community</h1>
-    <p class="sub">Each brand below runs on its own topic taxonomy, branding, and live match pool — same engine, fully separate communities.</p>
-    <div id="brand-grid" class="brand-grid"></div>
-  </main>
+  <section class="hero">
+    <h1>Turn your website traffic into a real community</h1>
+    <p class="hero-sub">
+      Connect Cosmic matches your members live, on the topics you define — no open free text, no moderation
+      nightmare. They chat anonymously, reveal if they choose, and stay connected. You reach them again with
+      broadcasts they actually read and rate.
+    </p>
+    <div class="hero-cta">
+      <a href="/try" class="btn-primary">Try the live demo →</a>
+      <a href="#pricing" class="btn-secondary">See pricing</a>
+    </div>
+    <p class="hero-note">No signup required to try it — two browser tabs is all you need to see a live match happen.</p>
+  </section>
 
-  <script>
-    fetch('/api/brands').then(r => r.json()).then(brands => {
-      const grid = document.getElementById('brand-grid');
-      brands.forEach(b => {
-        const card = document.createElement('a');
-        card.href = `/b/${b.slug}`;
-        card.className = 'brand-card';
-        card.style.setProperty('--card-accent', b.accentColor);
-        card.innerHTML = `
-          <div class="swatch" style="background:${b.accentColor}"></div>
-          <div class="card-name">${b.name}</div>
-          <div class="card-tagline">${b.tagline}</div>
-        `;
-        grid.appendChild(card);
-      });
-    });
-  </script>
+  <section class="how" id="how">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <h3>Member picks a topic</h3>
+      <p>From a list you define — onboarding help, a promo, whatever fits your community. No open text, so nothing off-brand ever shows up.</p>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <h3>Matched live, anonymously</h3>
+      <p>Two members on the same topic at the same moment get connected instantly and chat without revealing who they are — until they choose to.</p>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <h3>Reveal and stay connected</h3>
+      <p>If both choose to reveal, the connection is saved. They can find each other again — a real relationship, not a one-off chat.</p>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <h2>Everything a brand community actually needs</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Live topic matching</h3>
+        <p>Real-time pairing scoped to topics you define per brand — the core hook that gets members talking to each other.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎭</div>
+        <h3>Anonymous-first, mutual reveal</h3>
+        <p>Members chat safely by default. Identity only shows if both sides opt in — never one-sided.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤝</div>
+        <h3>Persistent connections</h3>
+        <p>Once revealed, the connection is saved to both members' accounts — not lost when the chat window closes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📣</div>
+        <h3>Brand broadcasts</h3>
+        <p>Post promotions, support updates, or feedback requests straight into your members' feed — with comments and star ratings built in.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛠️</div>
+        <h3>No-code admin console</h3>
+        <p>Set up topics, branding, and broadcasts yourself. No engineering ticket required to launch or edit a community.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Live trending signal</h3>
+        <p>See what your members are actively interested in, right now — a real-time pulse on your own audience.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <h2>Pricing</h2>
+    <p class="pricing-sub">Draft pricing — talk to us to lock in numbers for your community size.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Pilot</h3>
+        <div class="price">Free</div>
+        <p class="price-desc">Validate the concept with a real audience before committing.</p>
+        <ul>
+          <li>1 community</li>
+          <li>Up to 500 members</li>
+          <li>Live topic matching</li>
+          <li>No-code admin console</li>
+        </ul>
+        <a href="/try" class="btn-secondary full">Try it free</a>
+      </div>
+      <div class="price-card featured">
+        <div class="price-badge">Most communities</div>
+        <h3>Growth</h3>
+        <div class="price">$299<span>/mo</span></div>
+        <p class="price-desc">For a live, ongoing brand community.</p>
+        <ul>
+          <li>Up to 5,000 members</li>
+          <li>Brand broadcasts, comments &amp; ratings</li>
+          <li>Persistent member connections</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="/try" class="btn-primary full">Get started</a>
+      </div>
+      <div class="price-card">
+        <h3>Enterprise</h3>
+        <div class="price">Talk to us</div>
+        <p class="price-desc">Custom scale, domain, and integrations.</p>
+        <ul>
+          <li>Unlimited members</li>
+          <li>Custom domain</li>
+          <li>SSO &amp; dedicated support</li>
+          <li>Custom integrations</li>
+        </ul>
+        <a href="/try" class="btn-secondary full">Contact us</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div>Connect Cosmic</div>
+    <div class="footer-links"><a href="/try">Try the demo</a><a href="/admin">Brand login</a></div>
+  </footer>
 </body>
 </html>

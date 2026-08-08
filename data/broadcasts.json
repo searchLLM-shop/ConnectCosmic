@@ -1,0 +1,20 @@
+[
+  {
+    "id": "ceb82eb5-f589-40fb-be8c-ed73a869336a",
+    "slug": "flowly",
+    "type": "promotion",
+    "title": "20% off annual plans this week",
+    "body": "Switch to annual billing before Friday and lock in 20% off for the life of your plan.",
+    "link": "https://flowly.io/pricing",
+    "createdAt": 1786174166654
+  },
+  {
+    "id": "a1f9edbe-dbc5-4000-ae28-2373cec7e039",
+    "slug": "flowly",
+    "type": "feedback",
+    "title": "Rate the new dashboard redesign",
+    "body": "We shipped a redesigned dashboard last week. How is it working for you?",
+    "link": "",
+    "createdAt": 1786174166749
+  }
+]

@@ -13,6 +13,14 @@ const addTopicBtn = document.getElementById('add-topic-btn');
 const deleteBtn = document.getElementById('delete-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const newBrandBtn = document.getElementById('new-brand-btn');
+const broadcastsPanel = document.getElementById('broadcasts-panel');
+const broadcastsList = document.getElementById('broadcasts-list');
+const broadcastForm = document.getElementById('broadcast-form');
+const bcType = document.getElementById('bc-type');
+const bcTitle = document.getElementById('bc-title');
+const bcBody = document.getElementById('bc-body');
+const bcLink = document.getElementById('bc-link');
+const broadcastError = document.getElementById('broadcast-error');
 
 let brands = [];
 let editingSlug = null; // null = creating new
@@ -77,6 +85,7 @@ function openForNew() {
   formError.textContent = '';
   emptyState.classList.add('hidden');
   form.classList.remove('hidden');
+  broadcastsPanel.classList.add('hidden');
   renderList();
 }
 
@@ -97,15 +106,79 @@ function openForEdit(slug) {
   formError.textContent = '';
   emptyState.classList.add('hidden');
   form.classList.remove('hidden');
+  broadcastsPanel.classList.remove('hidden');
+  loadBroadcasts(slug);
   renderList();
 }
 
 function closeForm() {
   editingSlug = null;
   form.classList.add('hidden');
+  broadcastsPanel.classList.add('hidden');
   emptyState.classList.remove('hidden');
   renderList();
 }
+
+async function loadBroadcasts(slug) {
+  const res = await fetch(`/api/admin/brands/${slug}/broadcasts`);
+  const items = await res.json();
+  renderBroadcasts(items);
+}
+
+const BC_TYPE_LABEL = { promotion: '🎁 Promotion', support: '🛟 Support', feedback: '⭐ Feedback' };
+
+function renderBroadcasts(items) {
+  broadcastsList.innerHTML = '';
+  if (!items.length) {
+    broadcastsList.innerHTML = '<p class="sub small">No posts yet.</p>';
+    return;
+  }
+  items.forEach(post => {
+    const card = document.createElement('div');
+    card.className = 'broadcast-card';
+    const stats = post.avgRating ? `${post.avgRating.toFixed(1)}★ (${post.ratingCount}) · ` : '';
+    const header = document.createElement('div');
+    header.className = 'broadcast-card-header';
+    header.innerHTML = `<span>${BC_TYPE_LABEL[post.type] || post.type}</span><span class="sub small">${stats}${post.commentCount} comment${post.commentCount === 1 ? '' : 's'}</span>`;
+    const title = document.createElement('strong');
+    title.textContent = post.title;
+    const body = document.createElement('p');
+    body.textContent = post.body;
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'ghost-btn small danger';
+    delBtn.textContent = 'Delete';
+    delBtn.addEventListener('click', async () => {
+      if (!confirm('Delete this post? Comments and ratings on it will be orphaned.')) return;
+      await fetch(`/api/admin/brands/${editingSlug}/broadcasts/${post.id}`, { method: 'DELETE' });
+      loadBroadcasts(editingSlug);
+    });
+    card.appendChild(header);
+    card.appendChild(title);
+    card.appendChild(body);
+    card.appendChild(delBtn);
+    broadcastsList.appendChild(card);
+  });
+}
+
+broadcastForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  broadcastError.textContent = '';
+  const res = await fetch(`/api/admin/brands/${editingSlug}/broadcasts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: bcType.value, title: bcTitle.value.trim(), body: bcBody.value.trim(), link: bcLink.value.trim() }),
+  });
+  if (!res.ok) {
+    const { error } = await res.json();
+    broadcastError.textContent = error;
+    return;
+  }
+  bcTitle.value = '';
+  bcBody.value = '';
+  bcLink.value = '';
+  loadBroadcasts(editingSlug);
+});
 
 newBrandBtn.addEventListener('click', openForNew);
 addTopicBtn.addEventListener('click', () => addTopicRow());

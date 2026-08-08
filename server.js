@@ -4,6 +4,8 @@ const fs = require('fs');
 const crypto = require('crypto');
 const http = require('http');
 const { Server } = require('socket.io');
+const store = require('./store');
+const auth = require('./auth');
 
 const app = express();
 const server = http.createServer(app);
@@ -121,7 +123,157 @@ app.delete('/api/admin/brands/:slug', (req, res) => {
   res.json({ ok: true });
 });
 
+function ensureMembership(memberId, slug) {
+  const existing = store.memberships.find(m => m.memberId === memberId && m.slug === slug);
+  if (!existing) store.memberships.add({ id: crypto.randomUUID(), memberId, slug, joinedAt: Date.now() });
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+app.post('/api/auth/request-link', (req, res) => {
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const slug = req.body.slug || '';
+  if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'Enter a valid email address.' });
+
+  let member = store.members.find(m => m.email === email);
+  if (!member) {
+    const base = email.split('@')[0].replace(/[^a-zA-Z0-9]+/g, ' ').trim() || 'Member';
+    const displayName = base.charAt(0).toUpperCase() + base.slice(1);
+    member = store.members.add({ id: crypto.randomUUID(), email, displayName, createdAt: Date.now() });
+  }
+
+  const token = auth.createMagicToken(email);
+  const origin = `${req.protocol}://${req.get('host')}`;
+  const magicLink = `${origin}/api/auth/verify?token=${encodeURIComponent(token)}${slug ? `&slug=${encodeURIComponent(slug)}` : ''}`;
+
+  // No email provider is configured yet — the link is logged/returned instead of emailed.
+  // Set an EMAIL_* provider integration here and this becomes a real send.
+  console.log(`[dev-mode] Magic link for ${email}: ${magicLink}`);
+  res.json({ ok: true, devMagicLink: magicLink });
+});
+
+app.get('/api/auth/verify', (req, res) => {
+  const payload = auth.verify(req.query.token);
+  if (!payload || payload.type !== 'magic') return res.status(400).send('This login link is invalid or has expired.');
+
+  const member = store.members.find(m => m.email === payload.email);
+  if (!member) return res.status(400).send('Unknown account.');
+
+  auth.setSessionCookie(res, auth.createSessionToken(member.id));
+  const slug = req.query.slug;
+  res.redirect(slug ? `/b/${slug}` : '/');
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  auth.clearSessionCookie(res);
+  res.json({ ok: true });
+});
+
+app.get('/api/me', (req, res) => {
+  const member = auth.memberFromRequest(req);
+  if (!member) return res.status(401).json({ error: 'Not signed in.' });
+  res.json({ id: member.id, email: member.email, displayName: member.displayName });
+});
+
+app.get('/api/b/:slug/feed', auth.requireMemberAuth, (req, res) => {
+  const { slug } = req.params;
+  if (!brandBySlug.has(slug)) return res.status(404).json({ error: 'Unknown community.' });
+  ensureMembership(req.member.id, slug);
+
+  const items = store.broadcasts.filter(b => b.slug === slug).sort((a, b) => b.createdAt - a.createdAt).map(b => {
+    const itemComments = store.comments.filter(c => c.broadcastId === b.id);
+    const itemRatings = store.ratings.filter(r => r.broadcastId === b.id);
+    const avgRating = itemRatings.length ? itemRatings.reduce((s, r) => s + r.rating, 0) / itemRatings.length : null;
+    const myRating = itemRatings.find(r => r.memberId === req.member.id)?.rating || null;
+    return {
+      id: b.id, type: b.type, title: b.title, body: b.body, link: b.link, createdAt: b.createdAt,
+      commentCount: itemComments.length, avgRating, ratingCount: itemRatings.length, myRating,
+    };
+  });
+  res.json(items);
+});
+
+app.get('/api/b/:slug/feed/:id/comments', auth.requireMemberAuth, (req, res) => {
+  const list = store.comments.filter(c => c.broadcastId === req.params.id)
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .map(c => ({ id: c.id, body: c.body, createdAt: c.createdAt, displayName: store.members.find(m => m.id === c.memberId)?.displayName || 'Member' }));
+  res.json(list);
+});
+
+app.post('/api/b/:slug/feed/:id/comments', auth.requireMemberAuth, (req, res) => {
+  const body = String(req.body.body || '').trim();
+  if (!body) return res.status(400).json({ error: 'Comment cannot be empty.' });
+  if (!store.broadcasts.find(b => b.id === req.params.id)) return res.status(404).json({ error: 'Unknown post.' });
+  ensureMembership(req.member.id, req.params.slug);
+
+  const comment = store.comments.add({
+    id: crypto.randomUUID(), broadcastId: req.params.id, memberId: req.member.id,
+    body: body.slice(0, 1000), createdAt: Date.now(),
+  });
+  res.status(201).json({ id: comment.id, body: comment.body, createdAt: comment.createdAt, displayName: req.member.displayName });
+});
+
+app.post('/api/b/:slug/feed/:id/rating', auth.requireMemberAuth, (req, res) => {
+  const rating = Number(req.body.rating);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return res.status(400).json({ error: 'Rating must be 1-5.' });
+  if (!store.broadcasts.find(b => b.id === req.params.id)) return res.status(404).json({ error: 'Unknown post.' });
+  ensureMembership(req.member.id, req.params.slug);
+
+  const existing = store.ratings.find(r => r.broadcastId === req.params.id && r.memberId === req.member.id);
+  if (existing) store.ratings.update(r => r.id === existing.id, { rating });
+  else store.ratings.add({ id: crypto.randomUUID(), broadcastId: req.params.id, memberId: req.member.id, rating, createdAt: Date.now() });
+  res.json({ ok: true });
+});
+
+app.get('/api/b/:slug/connections', auth.requireMemberAuth, (req, res) => {
+  const { slug } = req.params;
+  ensureMembership(req.member.id, slug);
+  const mine = store.connections.filter(c => c.slug === slug && (c.memberIdA === req.member.id || c.memberIdB === req.member.id));
+  const list = mine.map(c => {
+    const peerId = c.memberIdA === req.member.id ? c.memberIdB : c.memberIdA;
+    const peer = store.members.find(m => m.id === peerId);
+    return { id: c.id, peerDisplayName: peer?.displayName || 'Member', viaTopic: c.viaTopic, createdAt: c.createdAt };
+  }).sort((a, b) => b.createdAt - a.createdAt);
+  res.json(list);
+});
+
+app.get('/api/admin/brands/:slug/broadcasts', (req, res) => {
+  if (!brandBySlug.has(req.params.slug)) return res.status(404).json({ error: 'Unknown brand.' });
+  const list = store.broadcasts.filter(b => b.slug === req.params.slug).sort((a, b) => b.createdAt - a.createdAt).map(b => {
+    const itemComments = store.comments.filter(c => c.broadcastId === b.id);
+    const itemRatings = store.ratings.filter(r => r.broadcastId === b.id);
+    const avgRating = itemRatings.length ? itemRatings.reduce((s, r) => s + r.rating, 0) / itemRatings.length : null;
+    return { ...b, commentCount: itemComments.length, avgRating, ratingCount: itemRatings.length };
+  });
+  res.json(list);
+});
+
+app.post('/api/admin/brands/:slug/broadcasts', (req, res) => {
+  const { slug } = req.params;
+  if (!brandBySlug.has(slug)) return res.status(404).json({ error: 'Unknown brand.' });
+  const { type, title, body, link } = req.body;
+  if (!['promotion', 'support', 'feedback'].includes(type)) return res.status(400).json({ error: 'Invalid broadcast type.' });
+  if (!title?.trim()) return res.status(400).json({ error: 'Title is required.' });
+  if (!body?.trim()) return res.status(400).json({ error: 'Body is required.' });
+
+  let normalizedLink = link?.trim() || '';
+  if (normalizedLink && !/^https?:\/\//i.test(normalizedLink)) normalizedLink = `https://${normalizedLink}`;
+
+  const post = store.broadcasts.add({
+    id: crypto.randomUUID(), slug, type, title: title.trim(), body: body.trim(), link: normalizedLink, createdAt: Date.now(),
+  });
+  res.status(201).json(post);
+});
+
+app.delete('/api/admin/brands/:slug/broadcasts/:id', (req, res) => {
+  const ok = store.broadcasts.remove(b => b.id === req.params.id && b.slug === req.params.slug);
+  if (!ok) return res.status(404).json({ error: 'Unknown post.' });
+  res.json({ ok: true });
+});
+
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+
+app.get('/try', (req, res) => res.sendFile(path.join(__dirname, 'public', 'try.html')));
 
 app.get('/b/:slug', (req, res) => {
   if (!brandBySlug.has(req.params.slug)) return res.status(404).send('Unknown community');
@@ -213,10 +365,29 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('chat-message', { from: 'system', text: `${meta.anonName} wants to reveal identity.` });
 
     if (room.reveals.size === room.members.length) {
-      room.members.forEach((id, i) => {
-        const identity = FAKE_IDENTITIES[Math.floor(Math.random() * FAKE_IDENTITIES.length)];
-        io.to(room.members[1 - i]).emit('revealed', { anonName: socketMeta.get(id).anonName, ...identity });
-      });
+      const [idA, idB] = room.members;
+      const memberA = auth.memberFromSocket(io.sockets.sockets.get(idA));
+      const memberB = auth.memberFromSocket(io.sockets.sockets.get(idB));
+
+      if (memberA && memberB) {
+        const slug = room.slug;
+        const alreadyConnected = store.connections.find(c => c.slug === slug &&
+          ((c.memberIdA === memberA.id && c.memberIdB === memberB.id) ||
+           (c.memberIdA === memberB.id && c.memberIdB === memberA.id)));
+        if (!alreadyConnected) {
+          store.connections.add({
+            id: crypto.randomUUID(), slug, memberIdA: memberA.id, memberIdB: memberB.id,
+            viaTopic: topicOf(slug, room.topicId)?.label || room.topicId, createdAt: Date.now(),
+          });
+        }
+        io.to(idA).emit('revealed', { anonName: socketMeta.get(idA).anonName, name: memberB.displayName, location: null, saved: true });
+        io.to(idB).emit('revealed', { anonName: socketMeta.get(idB).anonName, name: memberA.displayName, location: null, saved: true });
+      } else {
+        room.members.forEach((id, i) => {
+          const identity = FAKE_IDENTITIES[Math.floor(Math.random() * FAKE_IDENTITIES.length)];
+          io.to(room.members[1 - i]).emit('revealed', { anonName: socketMeta.get(id).anonName, ...identity, saved: false });
+        });
+      }
     }
   });
 
