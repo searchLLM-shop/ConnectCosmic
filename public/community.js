@@ -23,7 +23,7 @@ let myAnonName = null;
 socket.emit('enter-brand', slug);
 
 socket.on('brand-config', (brand) => {
-  document.title = `${brand.name} Community — powered by Connect Cosmic`;
+  document.title = `${brand.name} Community — powered by Connect8 AI`;
   brandNameEl.textContent = brand.name;
   brandTaglineEl.textContent = `Pick a topic — we'll match you with another ${brand.name} member thinking about the same thing right now.`;
   document.documentElement.style.setProperty('--accent', brand.accentColor);

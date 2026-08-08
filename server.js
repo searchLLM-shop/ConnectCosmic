@@ -37,7 +37,7 @@ function requireAdminAuth(req, res, next) {
       return next();
     }
   }
-  res.set('WWW-Authenticate', 'Basic realm="Connect Cosmic Admin"');
+  res.set('WWW-Authenticate', 'Basic realm="Connect8 AI Admin"');
   res.status(401).send('Authentication required.');
 }
 
@@ -454,4 +454,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3300;
-server.listen(PORT, () => console.log(`Connect Cosmic MVP running on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Connect8 AI running on http://localhost:${PORT}`));
