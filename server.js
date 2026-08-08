@@ -52,7 +52,8 @@ function saveBrands() {
 
 const SLUG_RE = /^[a-z0-9-]+$/;
 const PLANS = ['pilot', 'growth', 'enterprise'];
-const PILOT_AI_MONTHLY_LIMIT = 20;
+const TRIAL_DAYS = 30;
+const TRIAL_MS = TRIAL_DAYS * 24 * 60 * 60 * 1000;
 
 function validateBrand(body, { isNew }) {
   if (isNew && !SLUG_RE.test(body.slug || '')) return 'Slug must be lowercase letters, numbers, and hyphens only.';
@@ -87,10 +88,15 @@ function incrementAiUsage(slug) {
   else store.aiUsage.add({ id: crypto.randomUUID(), slug, monthKey: key, count: 1 });
 }
 
-function aiQuotaRemaining(slug) {
+function trialExpiresAt(slug) {
+  const brand = brandBySlug.get(slug);
+  return (brand?.trialStartedAt || Date.now()) + TRIAL_MS;
+}
+
+function aiTrialActive(slug) {
   const plan = brandBySlug.get(slug)?.plan || 'pilot';
-  if (plan !== 'pilot') return Infinity;
-  return Math.max(0, PILOT_AI_MONTHLY_LIMIT - aiUsageThisMonth(slug));
+  if (plan !== 'pilot') return true;
+  return Date.now() < trialExpiresAt(slug);
 }
 
 function normalizeTopics(topics) {
@@ -121,6 +127,7 @@ app.post('/api/admin/brands', (req, res) => {
     slug: body.slug, name: body.name.trim(), tagline: body.tagline || '',
     accentColor: body.accentColor, accentColor2: body.accentColor2,
     plan: PLANS.includes(body.plan) ? body.plan : 'pilot',
+    trialStartedAt: Date.now(),
     topics: normalizeTopics(body.topics),
   });
   saveBrands();
@@ -134,10 +141,18 @@ app.put('/api/admin/brands/:slug', (req, res) => {
   const err = validateBrand(body, { isNew: false });
   if (err) return res.status(400).json({ error: err });
 
+  const prevPlan = BRANDS[idx].plan || 'pilot';
+  const newPlan = PLANS.includes(body.plan) ? body.plan : prevPlan;
+  // Re-entering pilot from a paid plan starts a fresh trial; staying on pilot keeps the original clock.
+  const trialStartedAt = (newPlan === 'pilot' && prevPlan !== 'pilot')
+    ? Date.now()
+    : (BRANDS[idx].trialStartedAt || Date.now());
+
   BRANDS[idx] = {
     ...BRANDS[idx], name: body.name.trim(), tagline: body.tagline || '',
     accentColor: body.accentColor, accentColor2: body.accentColor2,
-    plan: PLANS.includes(body.plan) ? body.plan : (BRANDS[idx].plan || 'pilot'),
+    plan: newPlan,
+    trialStartedAt,
     topics: normalizeTopics(body.topics),
   };
   saveBrands();
@@ -151,7 +166,8 @@ app.get('/api/admin/brands/:slug/ai-usage', (req, res) => {
   res.json({
     plan,
     used: aiUsageThisMonth(slug),
-    limit: plan === 'pilot' ? PILOT_AI_MONTHLY_LIMIT : null,
+    trialActive: aiTrialActive(slug),
+    trialExpiresAt: plan === 'pilot' ? trialExpiresAt(slug) : null,
   });
 });
 
@@ -357,8 +373,8 @@ async function checkAiMatch(roomId) {
   if (!room || room.aiInFlight) return;
   room.aiInFlight = true;
   try {
-    if (aiQuotaRemaining(room.slug) <= 0) {
-      console.log(`[ai] room ${roomId}: pilot monthly quota exhausted for ${room.slug}, skipping`);
+    if (!aiTrialActive(room.slug)) {
+      console.log(`[ai] room ${roomId}: pilot trial expired for ${room.slug}, skipping`);
       return;
     }
     const broadcasts = store.broadcasts.filter(b => b.slug === room.slug);

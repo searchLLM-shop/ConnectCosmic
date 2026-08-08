@@ -6,6 +6,7 @@
     "accentColor": "#6d5efc",
     "accentColor2": "#35d0ba",
     "plan": "pilot",
+    "trialStartedAt": 1786182155247,
     "topics": [
       {
         "id": "onboarding",
@@ -46,6 +47,7 @@
     "accentColor": "#ff7a59",
     "accentColor2": "#ffd166",
     "plan": "pilot",
+    "trialStartedAt": 1786182155247,
     "topics": [
       {
         "id": "form-check",

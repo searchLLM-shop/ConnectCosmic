@@ -121,10 +121,18 @@ async function loadAiUsage(slug) {
   aiUsageNote.textContent = '';
   const res = await fetch(`/api/admin/brands/${slug}/ai-usage`);
   if (!res.ok) return;
-  const { plan, used, limit } = await res.json();
-  aiUsageNote.textContent = limit === null
-    ? `AI-matched tips used this month: ${used} (unlimited on ${plan})`
-    : `AI-matched tips used this month: ${used} / ${limit} (${plan} plan — resets next month)`;
+  const { plan, used, trialActive, trialExpiresAt } = await res.json();
+
+  if (plan !== 'pilot') {
+    aiUsageNote.textContent = `AI-matched tips used this month: ${used} (unlimited on ${plan})`;
+    return;
+  }
+  if (!trialActive) {
+    aiUsageNote.textContent = `AI-matched tips: free trial ended. Upgrade to Growth or Enterprise to re-enable.`;
+    return;
+  }
+  const daysLeft = Math.max(0, Math.ceil((trialExpiresAt - Date.now()) / (24 * 60 * 60 * 1000)));
+  aiUsageNote.textContent = `AI-matched tips: free trial active, ${daysLeft} day${daysLeft === 1 ? '' : 's'} left (${used} used this month). Upgrade to keep it running after the trial ends.`;
 }
 
 function closeForm() {
