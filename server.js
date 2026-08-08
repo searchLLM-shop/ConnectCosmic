@@ -8,6 +8,7 @@ const store = require('./store');
 const auth = require('./auth');
 
 const app = express();
+app.set('trust proxy', 1); // Render sits behind a proxy that terminates TLS; trust its X-Forwarded-Proto.
 const server = http.createServer(app);
 const io = new Server(server);
 
@@ -159,7 +160,7 @@ app.get('/api/auth/verify', (req, res) => {
   const member = store.members.find(m => m.email === payload.email);
   if (!member) return res.status(400).send('Unknown account.');
 
-  auth.setSessionCookie(res, auth.createSessionToken(member.id));
+  auth.setSessionCookie(res, auth.createSessionToken(member.id), req.secure);
   const slug = req.query.slug;
   res.redirect(slug ? `/b/${slug}` : '/');
 });

@@ -72,9 +72,10 @@ function requireMemberAuth(req, res, next) {
   next();
 }
 
-function setSessionCookie(res, token) {
+function setSessionCookie(res, token, secure) {
   const maxAge = 30 * 24 * 60 * 60;
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`);
+  const secureFlag = secure ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secureFlag}`);
 }
 
 function clearSessionCookie(res) {
