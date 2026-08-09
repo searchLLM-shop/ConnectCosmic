@@ -23,6 +23,11 @@ const bcTitle = document.getElementById('bc-title');
 const bcBody = document.getElementById('bc-body');
 const bcLink = document.getElementById('bc-link');
 const broadcastError = document.getElementById('broadcast-error');
+const embedPanel = document.getElementById('embed-panel');
+const embedSnippet = document.getElementById('embed-snippet');
+const copyEmbedBtn = document.getElementById('copy-embed-btn');
+const copyEmbedStatus = document.getElementById('copy-embed-status');
+const embedDirectLink = document.getElementById('embed-direct-link');
 
 let brands = [];
 let editingSlug = null; // null = creating new
@@ -90,6 +95,7 @@ function openForNew() {
   emptyState.classList.add('hidden');
   form.classList.remove('hidden');
   broadcastsPanel.classList.add('hidden');
+  embedPanel.classList.add('hidden');
   renderList();
 }
 
@@ -114,8 +120,26 @@ function openForEdit(slug) {
   broadcastsPanel.classList.remove('hidden');
   loadBroadcasts(slug);
   loadAiUsage(slug);
+  showEmbedCode(slug);
   renderList();
 }
+
+function showEmbedCode(slug) {
+  embedPanel.classList.remove('hidden');
+  const origin = window.location.origin;
+  embedSnippet.textContent = `<script src="${origin}/widget.js" data-brand="${slug}"><\/script>`;
+  copyEmbedStatus.textContent = '';
+  const directUrl = `${origin}/b/${slug}`;
+  embedDirectLink.textContent = directUrl;
+  embedDirectLink.href = directUrl;
+}
+
+copyEmbedBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(embedSnippet.textContent).then(() => {
+    copyEmbedStatus.textContent = 'Copied!';
+    setTimeout(() => { copyEmbedStatus.textContent = ''; }, 2000);
+  });
+});
 
 async function loadAiUsage(slug) {
   aiUsageNote.textContent = '';
@@ -139,6 +163,7 @@ function closeForm() {
   editingSlug = null;
   form.classList.add('hidden');
   broadcastsPanel.classList.add('hidden');
+  embedPanel.classList.add('hidden');
   emptyState.classList.remove('hidden');
   renderList();
 }

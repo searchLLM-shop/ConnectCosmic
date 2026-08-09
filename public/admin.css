@@ -136,6 +136,23 @@
   .topic-row-line:last-child { grid-template-columns: 1fr; }
 }
 
+#embed-panel { margin-top: 20px; }
+#embed-panel h2 { font-size: 18px; margin: 0 0 4px; }
+.embed-snippet {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+  color: var(--accent-2);
+  overflow-x: auto;
+  white-space: pre;
+  margin: 14px 0 10px;
+}
+#copy-embed-status { margin-left: 10px; color: var(--accent-2); }
+#embed-direct-link { color: var(--accent); word-break: break-all; }
+
 #broadcasts-panel { margin-top: 20px; }
 #broadcasts-panel h2 { font-size: 18px; margin: 0 0 4px; }
 

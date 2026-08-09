@@ -1,0 +1,61 @@
+/* Compact layout for the embeddable widget iframe. Reuses style.css's variables
+   and component styles — this file only overrides sizing/layout for a narrow,
+   fixed-height panel instead of a full browser tab. */
+
+html, body.widget-mode {
+  height: 100%;
+  margin: 0;
+}
+body.widget-mode {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.widget-mode .topbar {
+  flex: 0 0 auto;
+  padding: 12px 16px;
+}
+.widget-mode .brand { font-size: 15px; }
+
+.widget-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.widget-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.widget-close-btn:hover { color: var(--text); background: var(--panel-2); }
+
+.widget-mode .tabs {
+  flex: 0 0 auto;
+  padding: 0 16px;
+  margin: 8px auto 0;
+}
+
+/* No room for the trending sidebar in a narrow panel. */
+.widget-mode .trending { display: none; }
+
+.widget-mode #view-match,
+.widget-mode #view-community {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  margin: 12px auto;
+  padding: 0 16px;
+  max-width: 100%;
+}
+.widget-mode .layout { grid-template-columns: 1fr; }
+
+.widget-mode .panel { padding: 18px; }
+.widget-mode .panel h1 { font-size: 19px; }
+.widget-mode .messages { height: 220px; }
+.widget-mode .community-cols { grid-template-columns: 1fr; gap: 20px; }

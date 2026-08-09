@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/widget.css">
+</head>
+<body class="widget-mode">
+  <header class="topbar">
+    <div class="brand" id="brand-name">Loading…</div>
+    <div class="widget-header-right">
+      <div class="auth-status" id="auth-status"></div>
+      <button id="widget-close-btn" class="widget-close-btn" type="button" title="Close">✕</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="match">Live Match</button>
+    <button class="tab-btn" data-tab="community">Community</button>
+  </nav>
+
+  <main class="layout" id="view-match">
+    <section class="trending">
+      <h2>Trending right now</h2>
+      <ul id="trending-list"></ul>
+      <p class="hint">Open this page in another tab to simulate a second member and get matched live.</p>
+    </section>
+
+    <section class="stage">
+      <div id="picker" class="panel">
+        <h1>What are you here about?</h1>
+        <p class="sub" id="brand-tagline"></p>
+        <div id="topic-list" class="topic-list"></div>
+        <p id="status" class="status"></p>
+      </div>
+
+      <div id="chat" class="panel hidden">
+        <div class="chat-header">
+          <div>
+            <div class="chat-topic" id="chat-topic"></div>
+            <div class="chat-you" id="chat-you"></div>
+          </div>
+          <button id="reveal-btn" class="ghost-btn">Reveal identity</button>
+          <button id="leave-btn" class="ghost-btn danger">Leave</button>
+        </div>
+        <div id="tip-banner" class="tip-banner"></div>
+        <div id="messages" class="messages"></div>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-input" autocomplete="off" placeholder="Type a message…" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <section class="community-layout hidden" id="view-community">
+    <section id="signed-out-panel" class="panel hidden">
+      <h1>Join the community</h1>
+      <p class="sub">Sign in to save connections you make here and see what the brand's posting.</p>
+      <form id="login-form" class="login-form">
+        <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" required>
+        <button type="submit">Send magic link</button>
+      </form>
+      <p id="login-status" class="status"></p>
+      <div id="dev-link-box" class="dev-link-box hidden"></div>
+    </section>
+
+    <section id="signed-in-panel" class="panel hidden">
+      <div class="community-cols">
+        <div class="feed-col">
+          <h2>Community feed</h2>
+          <div id="feed-list"></div>
+        </div>
+        <div class="connections-col">
+          <h2>My connections</h2>
+          <div id="connections-list"></div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/community.js"></script>
+  <script>
+    document.getElementById('widget-close-btn').addEventListener('click', () => {
+      window.parent.postMessage('cc-widget-close', '*');
+    });
+  </script>
+</body>
+</html>

@@ -338,6 +338,11 @@ app.get('/b/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'community.html'));
 });
 
+app.get('/widget/:slug', (req, res) => {
+  if (!brandBySlug.has(req.params.slug)) return res.status(404).send('Unknown community');
+  res.sendFile(path.join(__dirname, 'public', 'widget.html'));
+});
+
 // All matching state is scoped per brand — a topic id only ever matches within its own brand.
 const waitingPool = new Map(); // `${slug}:${topicId}` -> Set<socketId>
 const rooms = new Map(); // roomId -> { slug, topicId, members: [id, id], reveals: Set }
