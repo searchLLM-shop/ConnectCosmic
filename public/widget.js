@@ -1,6 +1,6 @@
 /* Connect8 AI embed widget.
    Usage on any site, any tech stack:
-   <script src="https://connect-cosmic.onrender.com/widget.js" data-brand="your-brand-slug"></script>
+   <script src="https://connect8ai.live/widget.js" data-brand="your-brand-slug"></script>
 */
 (function () {
   var thisScript = document.currentScript;
